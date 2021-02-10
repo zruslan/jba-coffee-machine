@@ -84,7 +84,7 @@ limits, balance = init_limits()
 
 #  show_status(limits, balance)
 
-while True:
+while  True:
     action = ask_action()
 
     if action == BUY:
