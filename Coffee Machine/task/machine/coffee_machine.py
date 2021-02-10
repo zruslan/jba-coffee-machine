@@ -1,42 +1,82 @@
 # Write your code here
-coffee = (200, 50, 15)
 
-limits = []
+BUY = "buy"
+FILL = "fill"
+TAKE = "take"
 
-print("Write how many ml of water the coffee machine has:")
-limits.append(int(input()))
+ACTIONS = (BUY, FILL, TAKE)
 
-print("Write how many ml of milk the coffee machine has:")
-limits.append(int(input()))
-
-print("Write how many grams of coffee beans the coffee machine has:")
-limits.append(int(input()))
-
-print("Write how many cups of coffee you will need:")
-cups = int(input())
-
-max_avail = min([limits[x] // y for x, y in enumerate(coffee)])
-# print(max_avail)
-
-if cups == max_avail:
-    print("Yes, I can make that amount of coffee")
-elif max_avail > cups:
-    print("Yes, I can make that amount of coffee (and even {} more than that)".format(max_avail - cups))
-else:
-    plural = "s" if max_avail != 1 else ""
-    print(f"No, I can make only {max_avail} cup{plural} of coffee")
+RECEIPTS = (  # (water, milk, beans, cups), $
+    ("espresso", (250, 0, 16, 1), 4),
+    ("latte", (350, 75, 20, 1), 7),
+    ("cappuccino", (200, 100, 12, 1), 6),
+)
 
 
-# print(f"For {cups} cup{plural} of coffee you will need:")
+def init_limits():
+    # [water, milk, beans, cups], money
+    return [400, 540, 120, 9], 550
 
-# print("{} ml of water".format(cups * coffee[0]))
-# print("{} ml of milk".format(cups * coffee[1]))
-# print("{} g of coffee beans".format(cups * coffee[2]))
 
-s = """Starting to make a coffee
-Grinding coffee beans
-Boiling water
-Mixing boiled water with crushed coffee beans
-Pouring coffee into the cup
-Pouring some milk into the cup
-Coffee is ready!"""
+def show_status(supplies, money):
+    print(f"""The coffee machine has:
+{supplies[0]} of water
+{supplies[1]} of milk
+{supplies[2]} of coffee beans
+{supplies[3]} of disposable cups
+{money} of money\n""")
+
+
+def ask_action():
+    print("Write action ({}):".format(", ".join(ACTIONS)))
+    return input()
+
+
+def ask_coffee_type():
+    print("What do you want to buy? "  # 1 - espresso, 2 - latte, 3 - cappuccino:")
+          + ", ".join(["{} - {}".format(x, r[0]) for x, r in enumerate(RECEIPTS, 1)]) + ":")
+    return int(input())
+
+
+def sell_coffee(coffee_type, supplies):
+    receipt_ingr, receipt_cost = RECEIPTS[coffee_type - 1][1:3]
+    for x, y in enumerate(supplies):
+        #    supplies = [x - y for x, y in zip(supplies, receipt_ingr)]
+        supplies[x] = y - receipt_ingr[x]
+    return receipt_cost
+
+
+def give_money(money):
+    print(f"I gave you ${money}")
+    return 0
+
+
+def fill_supplies(supplies):
+    print("Write how many ml of water do you want to add:")
+    supplies[0] += int(input())
+
+    print("Write how many ml of milk do you want to add:")
+    supplies[1] += int(input())
+
+    print("Write how many grams of coffee beans do you want to add:")
+    supplies[2] += int(input())
+
+    print("Write how many disposable cups of coffee do you want to add:")
+    supplies[3] += int(input())
+
+
+limits, balance = init_limits()
+
+show_status(limits, balance)
+action = ask_action()
+
+if action == BUY:
+    coffee_choice = ask_coffee_type()
+    balance += sell_coffee(coffee_choice, limits)
+elif action == TAKE:
+    balance = give_money(balance)
+elif action == FILL:
+    fill_supplies(limits)
+
+print()
+show_status(limits, balance)
